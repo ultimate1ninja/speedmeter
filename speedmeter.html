@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Speedometer</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #fff;
+            padding: 20px;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 800px;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        h1 {
+            margin-bottom: 10px;
+            color: #4cc9f0;
+            font-weight: 700;
+            text-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+        }
+        
+        .subtitle {
+            color: #a9b7c6;
+            margin-bottom: 30px;
+            font-size: 1.1rem;
+        }
+        
+        .speedometer-container {
+            position: relative;
+            width: 300px;
+            height: 300px;
+            margin: 0 auto 30px;
+        }
+        
+        .speedometer {
+            width: 100%;
+            height: 100%;
+            background: #0f3460;
+            border-radius: 50%;
+            position: relative;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5),
+                        inset 0 5px 15px rgba(255, 255, 255, 0.1);
+            border: 8px solid #1a1a2e;
+            overflow: hidden;
+        }
+        
+        .speedometer::before {
+            content: '';
+            position: absolute;
+            width: 90%;
+            height: 90%;
+            background: #16213e;
+            border-radius: 50%;
+            top: 5%;
+            left: 5%;
+            z-index: 1;
+        }
+        
+        .dial {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            z-index: 2;
+        }
+        
+        .mark {
+            position: absolute;
+            width: 3px;
+            height: 15px;
+            background: #fff;
+            left: 50%;
+            top: 10px;
+            transform-origin: bottom center;
+            transform: translateX(-50%);
+        }
+        
+        .major-mark {
+            width: 4px;
+            height: 25px;
+            background: #4cc9f0;
+        }
+        
+        .mark-label {
+            position: absolute;
+            color: #a9b7c6;
+            font-size: 14px;
+            font-weight: 600;
+            left: 50%;
+            top: 40px;
+            transform: translateX(-50%);
+        }
+        
+        .needle {
+            position: absolute;
+            width: 4px;
+            height: 120px;
+            background: linear-gradient(to top, #ff0000, #f72585);
+            border-radius: 4px;
+            bottom: 50%;
+            left: 50%;
+            transform-origin: bottom center;
+            transform: translateX(-50%) rotate(0deg);
+            z-index: 10;
+            transition: transform 0.2s ease-out;
+            box-shadow: 0 0 10px rgba(247, 37, 133, 0.7);
+        }
+        
+        .needle::before {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: #1a1a2e;
+            border-radius: 50%;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 3px solid #4cc9f0;
+        }
+        
+        .center-circle {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            background: #1a1a2e;
+            border-radius: 50%;
+            bottom: 50%;
+            left: 50%;
+            transform: translate(-50%, 50%);
+            border: 4px solid #4cc9f0;
+            z-index: 11;
+        }
+        
+        .speed-display {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, 20%);
+            font-size: 3.5rem;
+            font-weight: 800;
+            color: #4cc9f0;
+            z-index: 5;
+            text-shadow: 0 0 10px rgba(76, 201, 240, 0.5);
+        }
+        
+        .unit {
+            position: absolute;
+            top: 65%;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 1.2rem;
+            color: #a9b7c6;
+            z-index: 5;
+        }
+        
+        .max-speed {
+            position: absolute;
+            top: 15%;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #f72585;
+            font-weight: 700;
+            font-size: 1.5rem;
+            z-index: 5;
+            text-shadow: 0 0 5px rgba(247, 37, 133, 0.5);
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+        
+        .control-btn {
+            background: #0f3460;
+            color: #4cc9f0;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .control-btn:hover {
+            background: #1a508b;
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+        }
+        
+        .control-btn:active {
+            transform: translateY(0);
+        }
+        
+        .accelerate {
+            color: #4cc9f0;
+        }
+        
+        .brake {
+            color: #f72585;
+        }
+        
+        .touch-instructions {
+            background: rgba(15, 52, 96, 0.7);
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        .touch-instructions h3 {
+            color: #4cc9f0;
+            margin-bottom: 10px;
+        }
+        
+        .touch-instructions p {
+            color: #a9b7c6;
+            line-height: 1.5;
+        }
+        
+        .touch-hint {
+            display: inline-block;
+            background: #1a1a2e;
+            color: #4cc9f0;
+            padding: 5px 10px;
+            border-radius: 5px;
+            margin: 0 5px;
+        }
+        
+        .status {
+            margin-top: 20px;
+            color: #a9b7c6;
+            font-size: 1.1rem;
+        }
+        
+        .speed-high {
+            color: #f72585;
+            font-weight: 700;
+        }
+        
+        .speed-medium {
+            color: #ff9e00;
+            font-weight: 700;
+        }
+        
+        .speed-low {
+            color: #4cc9f0;
+            font-weight: 700;
+        }
+        
+        @media (max-width: 600px) {
+            .speedometer-container {
+                width: 280px;
+                height: 280px;
+            }
+            
+            .speed-display {
+                font-size: 3rem;
+            }
+            
+            .controls {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .control-btn {
+                width: 200px;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1><i class="fas fa-tachometer-alt"></i> Interactive Speedometer</h1>
+        <p class="subtitle">Touch/drag the speedometer or use buttons to accelerate up to 120 kph and back</p>
+        
+        <div class="speedometer-container">
+            <div class="speedometer">
+                <div class="dial" id="dial"></div>
+                <div class="max-speed">MAX 120</div>
+                <div class="speed-display" id="speedValue">0</div>
+                <div class="unit">kph</div>
+                <div class="needle" id="needle"></div>
+                <div class="center-circle"></div>
+            </div>
+        </div>
+        
+        <div class="controls">
+            <button class="control-btn accelerate" id="accelerateBtn">
+                <i class="fas fa-plus-circle"></i> Accelerate (+10 kph)
+            </button>
+            <button class="control-btn brake" id="brakeBtn">
+                <i class="fas fa-minus-circle"></i> Brake (-10 kph)
+            </button>
+            <button class="control-btn" id="resetBtn">
+                <i class="fas fa-redo"></i> Reset to 0
+            </button>
+        </div>
+        
+        <div class="touch-instructions">
+            <h3><i class="fas fa-hand-point-up"></i> Touch Interaction</h3>
+            <p>Click and drag <span class="touch-hint">UP</span> on the speedometer to increase speed</p>
+            <p>Click and drag <span class="touch-hint">DOWN</span> on the speedometer to decrease speed</p>
+            <p>Or simply tap anywhere on the speedometer to set speed directly</p>
+        </div>
+        
+        <div class="status">
+            Current status: <span id="speedStatus" class="speed-low">Stopped</span>
+        </div>
+    </div>
+
+    <script>
+        // DOM Elements
+        const speedValue = document.getElementById('speedValue');
+        const needle = document.getElementById('needle');
+        const dial = document.getElementById('dial');
+        const accelerateBtn = document.getElementById('accelerateBtn');
+        const brakeBtn = document.getElementById('brakeBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const speedStatus = document.getElementById('speedStatus');
+        
+        // Speedometer variables
+        let currentSpeed = 0;
+        const maxSpeed = 120;
+        const minSpeed = 0;
+        
+        // Initialize the speedometer dial marks
+        function createDialMarks() {
+            // Clear any existing marks
+            dial.innerHTML = '';
+            
+            // Create marks for every 5 kph
+            for (let i = 0; i <= maxSpeed; i += 5) {
+                const mark = document.createElement('div');
+                mark.classList.add('mark');
+                
+                // Major marks every 20 kph
+                if (i % 20 === 0) {
+                    mark.classList.add('major-mark');
+                    
+                    // Add label for major marks
+                    const label = document.createElement('div');
+                    label.classList.add('mark-label');
+                    label.textContent = i;
+                    
+                    // Position the mark and label
+                    const angle = (i / maxSpeed) * 240 - 120; // -120 to 120 degrees
+                    const radian = (angle * Math.PI) / 180;
+                    
+                    mark.style.transform = `translateX(-50%) rotate(${angle}deg)`;
+                    label.style.transform = `translateX(-50%) rotate(${angle}deg)`;
+                    
+                    // Position label at correct distance from center
+                    const labelRadius = 120; // Distance from center
+                    const labelX = labelRadius * Math.sin(radian);
+                    const labelY = -labelRadius * Math.cos(radian);
+                    
+                    label.style.left = `calc(50% + ${labelX}px)`;
+                    label.style.top = `calc(50% + ${labelY}px)`;
+                    
+                    dial.appendChild(label);
+                } else {
+                    // Position regular mark
+                    const angle = (i / maxSpeed) * 240 - 120;
+                    mark.style.transform = `translateX(-50%) rotate(${angle}deg)`;
+                }
+                
+                dial.appendChild(mark);
+            }
+        }
+        
+        // Update the speedometer display
+        function updateSpeedometer() {
+            // Update speed value
+            speedValue.textContent = Math.round(currentSpeed);
+            
+            // Calculate needle position (-120 to 120 degrees for 0-120 kph)
+            const angle = (currentSpeed / maxSpeed) * 240 - 120;
+            needle.style.transform = `translateX(-50%) rotate(${angle}deg)`;
+            
+            // Update status
+            updateStatus();
+        }
+        
+        // Update speed status text and color
+        function updateStatus() {
+            if (currentSpeed === 0) {
+                speedStatus.textContent = "Stopped";
+                speedStatus.className = "speed-low";
+            } else if (currentSpeed < 40) {
+                speedStatus.textContent = "Low Speed";
+                speedStatus.className = "speed-low";
+            } else if (currentSpeed < 80) {
+                speedStatus.textContent = "Medium Speed";
+                speedStatus.className = "speed-medium";
+            } else if (currentSpeed < 110) {
+                speedStatus.textContent = "High Speed";
+                speedStatus.className = "speed-high";
+            } else {
+                speedStatus.textContent = "Maximum Speed!";
+                speedStatus.className = "speed-high";
+            }
+        }
+        
+        // Change speed by a specific amount
+        function changeSpeed(amount) {
+            const newSpeed = currentSpeed + amount;
+            
+            // Ensure speed stays within bounds
+            if (newSpeed >= minSpeed && newSpeed <= maxSpeed) {
+                currentSpeed = newSpeed;
+                updateSpeedometer();
+            } else if (newSpeed < minSpeed) {
+                currentSpeed = minSpeed;
+                updateSpeedometer();
+            } else if (newSpeed > maxSpeed) {
+                currentSpeed = maxSpeed;
+                updateSpeedometer();
+            }
+        }
+        
+        // Set speed directly to a specific value
+        function setSpeed(speed) {
+            if (speed >= minSpeed && speed <= maxSpeed) {
+                currentSpeed = speed;
+                updateSpeedometer();
+            }
+        }
+        
+        // Handle mouse/touch drag on speedometer
+        function setupDragInteraction() {
+            const speedometer = document.querySelector('.speedometer');
+            let isDragging = false;
+            let startY = 0;
+            let startSpeed = 0;
+            
+            // Mouse events
+            speedometer.addEventListener('mousedown', startDrag);
+            document.addEventListener('mousemove', drag);
+            document.addEventListener('mouseup', stopDrag);
+            
+            // Touch events
+            speedometer.addEventListener('touchstart', touchStart);
+            document.addEventListener('touchmove', touchDrag);
+            document.addEventListener('touchend', stopDrag);
+            
+            // Also handle click to set speed directly
+            speedometer.addEventListener('click', handleClick);
+            
+            function startDrag(e) {
+                isDragging = true;
+                startY = e.clientY;
+                startSpeed = currentSpeed;
+                e.preventDefault();
+            }
+            
+            function touchStart(e) {
+                isDragging = true;
+                startY = e.touches[0].clientY;
+                startSpeed = currentSpeed;
+                e.preventDefault();
+            }
+            
+            function drag(e) {
+                if (!isDragging) return;
+                
+                const currentY = e.clientY;
+                const deltaY = startY - currentY; // Up is positive (increase speed)
+                const speedChange = (deltaY / 5); // Sensitivity factor
+                
+                const newSpeed = Math.round(startSpeed + speedChange);
+                setSpeed(newSpeed);
+                
+                e.preventDefault();
+            }
+            
+            function touchDrag(e) {
+                if (!isDragging) return;
+                
+                const currentY = e.touches[0].clientY;
+                const deltaY = startY - currentY;
+                const speedChange = (deltaY / 5);
+                
+                const newSpeed = Math.round(startSpeed + speedChange);
+                setSpeed(newSpeed);
+                
+                e.preventDefault();
+            }
+            
+            function stopDrag() {
+                isDragging = false;
+            }
+            
+            function handleClick(e) {
+                // Calculate click position relative to speedometer center
+                const rect = speedometer.getBoundingClientRect();
+                const centerX = rect.left + rect.width / 2;
+                const centerY = rect.top + rect.height / 2;
+                
+                // For click, we'll set speed based on angle (like a real dial)
+                const clickX = e.clientX;
+                const clickY = e.clientY;
+                
+                // Calculate angle from vertical (0° at top, 180° at bottom)
+                const deltaX = clickX - centerX;
+                const deltaY = clickY - centerY;
+                let angle = Math.atan2(deltaX, -deltaY) * (180 / Math.PI);
+                
+                // Convert angle to speed (0-120 kph)
+                // Our speedometer spans from -120° (0 kph) to 120° (120 kph)
+                // So we need to map angle from -120 to 120 to 0-120 kph
+                if (angle < -120) angle = -120;
+                if (angle > 120) angle = 120;
+                
+                const newSpeed = Math.round(((angle + 120) / 240) * maxSpeed);
+                setSpeed(newSpeed);
+            }
+        }
+        
+        // Initialize the speedometer
+        function initSpeedometer() {
+            createDialMarks();
+            updateSpeedometer();
+            setupDragInteraction();
+            
+            // Button event listeners
+            accelerateBtn.addEventListener('click', () => changeSpeed(10));
+            brakeBtn.addEventListener('click', () => changeSpeed(-10));
+            resetBtn.addEventListener('click', () => setSpeed(0));
+            
+            // Keyboard shortcuts
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'ArrowUp' || e.key === '+') {
+                    changeSpeed(10);
+                    e.preventDefault();
+                } else if (e.key === 'ArrowDown' || e.key === '-') {
+                    changeSpeed(-10);
+                    e.preventDefault();
+                } else if (e.key === '0' || e.key === 'r' || e.key === 'R') {
+                    setSpeed(0);
+                    e.preventDefault();
+                }
+            });
+        }
+        
+        // Initialize when page loads
+        window.addEventListener('DOMContentLoaded', initSpeedometer);
+    </script>
+</body>
+</html>
